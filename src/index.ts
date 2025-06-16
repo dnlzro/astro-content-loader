@@ -123,7 +123,7 @@ export default function globAstro({
       Object.keys(modulesAbsolute).map((filePath) => {
         const entry = posixRelative(baseDirPath, filePath);
         modulesAbsolute[filePath]().then((instance) =>
-          syncData(entry, instance as AstroInstance),
+          syncData(entry, instance as AstroContentInstance),
         );
       }),
     );
