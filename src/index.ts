@@ -104,7 +104,6 @@ export default function astroContentLoader({
     logger,
     parseData,
   }: LoaderContext) {
-    const untouchedEntries = new Set(store.keys());
 
     const modulesAbsolute = Object.fromEntries(
       Object.entries(modules).map(([p, m]) => {
@@ -129,8 +128,6 @@ export default function astroContentLoader({
         );
       }),
     );
-
-    untouchedEntries.forEach((id) => store.delete(id));
 
     if (!watcher) return;
     watcher.add(baseDirPath);
@@ -168,8 +165,6 @@ export default function astroContentLoader({
       if (oldId && oldId !== id) {
         store.delete(oldId);
       }
-
-      untouchedEntries.delete(id);
 
       const container = await experimental_AstroContainer.create();
       const html = await container.renderToString(instance.default);
