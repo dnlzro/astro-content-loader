@@ -4,6 +4,7 @@
   "repository": {
     "url": "git+https://github.com/dnlzro/astro-content-loader.git"
   },
+  "description": "Astro content loader for .astro files",
   "keywords": [
     "withastro",
     "astro-loader"
