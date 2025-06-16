@@ -7,6 +7,7 @@ import { green } from "kleur/colors";
 
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { existsSync } from "node:fs";
 import { posixRelative } from "./utils";
 
 interface AstroContentInstance extends AstroInstance {
@@ -62,8 +63,7 @@ function generateIdDefault({ entry, meta }: GenerateIdOptions) {
   return slug;
 }
 
-function inferBase(modules: Record<string, () => unknown>): string {
-  const paths = Object.keys(modules);
+function inferBase(paths: string[]): string {
   const splitPaths = paths.map((p) => p.split(path.sep));
 
   const baseParts: string[] = [];
@@ -104,21 +104,45 @@ export default function astroContentLoader({
     logger,
     parseData,
   }: LoaderContext) {
+    const paths = Object.keys(modules);
+    if (paths.length === 0) {
+      logger.warn(
+        "No modules found. Ensure the glob pattern is correct and files exist.",
+      );
+    }
+
+    if (paths.length < 2 && !base) {
+      logger.error(
+        `Cannot infer content base directory from ${paths.length === 0 ? "an empty collection" : "only one entry"}. You must either specify a base directory, or use a glob that matches multiple files.`,
+      );
+      return;
+    }
 
     const modulesAbsolute = Object.fromEntries(
-      Object.entries(modules).map(([p, m]) => {
+      paths.map((p) => {
         const relativeToRoot = p.startsWith(".")
           ? path.join("src", p)
           : path.join(".", p);
         const absoluteUrl = new URL(relativeToRoot, config.root);
-        return [fileURLToPath(absoluteUrl), m];
+        return [fileURLToPath(absoluteUrl), modules[p]];
       }),
     );
 
+    const pathsAbsolute = Object.keys(modulesAbsolute);
+
     const baseDir = base
       ? new URL(base, config.root)
-      : pathToFileURL(inferBase(modulesAbsolute));
+      : pathToFileURL(inferBase(pathsAbsolute));
     const baseDirPath = fileURLToPath(baseDir);
+
+    if (!existsSync(baseDir)) {
+      const message = [`The base directory "${baseDirPath}" does not exist.`];
+      const relativeBaseDir = path.join(".", baseDirPath);
+      if (baseDirPath.startsWith(path.sep) && existsSync(relativeBaseDir)) {
+        message.push(`Did you mean "${relativeBaseDir}"?`);
+      }
+      logger.error(message.join(" "));
+    }
 
     await Promise.all(
       Object.keys(modulesAbsolute).map((filePath) => {
