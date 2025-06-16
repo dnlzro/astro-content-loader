@@ -4,6 +4,10 @@
   "repository": {
     "url": "git+https://github.com/dnlzro/astro-content-loader.git"
   },
+  "keywords": [
+    "withastro",
+    "astro-loader"
+  ],
   "type": "module",
   "types": "./dist/index.d.ts",
   "exports": {
