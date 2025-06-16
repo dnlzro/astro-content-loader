@@ -89,7 +89,7 @@ function inferBase(modules: Record<string, () => unknown>): string {
  * // Loads all Astro files in `src/content/posts/`
  * astro({modules: import.meta.glob("./content/posts/*.astro")})
  */
-export default function globAstro({
+export default function astroContentLoader({
   modules,
   base,
   generateId = generateIdDefault,
@@ -213,7 +213,7 @@ export default function globAstro({
     }
   }
   return {
-    name: "glob-astro-loader",
+    name: "astro-content-loader",
     load,
   };
 }
