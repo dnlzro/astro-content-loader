@@ -1,7 +1,8 @@
 {
   "name": "astro-content-loader",
+  "version": "",
   "repository": {
-    "url": "https://github.com/dnlzro/astro-content-loader"
+    "url": "git+https://github.com/dnlzro/astro-content-loader.git"
   },
   "type": "module",
   "types": "./dist/index.d.ts",
