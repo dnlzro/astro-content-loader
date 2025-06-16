@@ -103,17 +103,18 @@ export default function astroContentLoader({
     watcher,
     logger,
     parseData,
+    collection,
   }: LoaderContext) {
     const paths = Object.keys(modules);
     if (paths.length === 0) {
       logger.warn(
-        "No modules found. Ensure the glob pattern is correct and files exist.",
+        `No modules found for content collection "${collection}". Ensure the glob pattern is correct and files exist.`,
       );
     }
 
     if (paths.length < 2 && !base) {
       logger.error(
-        `Cannot infer content base directory from ${paths.length === 0 ? "an empty collection" : "only one entry"}. You must either specify a base directory, or use a glob that matches multiple files.`,
+        `Cannot infer base directory of content collection "${collection}". You must either specify a base directory, or use a glob that matches multiple files.`,
       );
       return;
     }
