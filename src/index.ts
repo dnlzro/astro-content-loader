@@ -83,6 +83,8 @@ function inferBase(modules: Record<string, () => unknown>): string {
  * Loads Astro files from the provided glob as content entries. Files may export
  * a `meta` object to provide metadata (i.e., frontmatter) for each entry.
  *
+ * NOTE: `meta` object must not reference external variables or imports.
+ *
  * @example
  * // Loads all Astro files in `src/content/posts/`
  * astro({modules: import.meta.glob("./content/posts/*.astro")})
