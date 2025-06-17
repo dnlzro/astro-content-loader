@@ -1,29 +1,30 @@
 {
   "name": "astro-content-loader",
   "version": "",
-  "repository": {
-    "url": "git+https://github.com/dnlzro/astro-content-loader.git"
-  },
   "description": "Astro content loader for .astro files",
   "keywords": [
     "withastro",
     "astro-loader"
   ],
+  "repository": {
+    "url": "git+https://github.com/dnlzro/astro-content-loader.git"
+  },
   "type": "module",
-  "types": "./dist/index.d.ts",
   "exports": {
     ".": "./dist/index.js"
   },
+  "types": "./dist/index.d.ts",
   "files": [
     "dist"
   ],
-  "publishConfig": {
-    "provenance": true
-  },
   "scripts": {
-    "dev": "vite build --watch",
     "build": "vite build",
+    "dev": "vite build --watch",
     "prepare": "husky"
+  },
+  "dependencies": {
+    "github-slugger": "^2.0.0",
+    "kleur": "^4.1.5"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.8.1",
@@ -36,10 +37,9 @@
     "vite": "^6.3.5"
   },
   "peerDependencies": {
-    "astro": "^5.9.3"
+    "astro": "^5.0.0"
   },
-  "dependencies": {
-    "github-slugger": "^2.0.0",
-    "kleur": "^4.1.5"
+  "publishConfig": {
+    "provenance": true
   }
 }
