@@ -220,7 +220,7 @@ export default function astroContentLoader({
 
       const data = instance.meta ?? {};
 
-      parseData({
+      const parsedData = await parseData({
         id,
         data,
         filePath,
@@ -228,7 +228,8 @@ export default function astroContentLoader({
 
       store.set({
         id,
-        data,
+        data: parsedData,
+        digest,
         rendered: {
           html,
         },
