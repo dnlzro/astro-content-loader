@@ -2,6 +2,9 @@
 
 Load `.astro` files with the Astro Content Layer API, just as you would other formats (e.g., Markdown, MDX). Makes use of Vite's `import.meta.glob` to dynamically import `.astro` files as modules.
 
+> [!CAUTION]
+> This is very janky, so be prepared to troubleshoot. Please [file an issue](https://github.com/dnlzro/astro-content-loader/issues) if you encounter a problem not mentioned in this README.
+
 ## Installation
 
 ```bash
@@ -25,9 +28,15 @@ import astro from "astro-content-loader";
 
 const posts = defineCollection({
   loader: astro({
-    // Specify the path to your .astro content files
-    // NOTE: Path must be *relative* to the src/ directory
-    modules: import.meta.glob("./content/posts/**/*.astro"),
+    /*
+     * Specify the path to your .astro content files
+     *
+     * IMPORTANT:
+     *  - Glob path is evaluated relative to the src/ directory
+     *  - When running in dev mode, `eager` must be `false`
+     *  - When building, `eager` must be true
+     */
+    modules: import.meta.glob("./content/posts/**/*.astro", { eager: false }),
   }),
   // Optional: Define a schema for your content
   schema: z.object({

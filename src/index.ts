@@ -30,7 +30,7 @@ interface GlobOptions {
    * Note that the glob pattern is resolved relative to the *current* directory
    * (`src`).
    */
-  modules: Record<string, () => Promise<unknown>>;
+  modules: Record<string, unknown | (() => Promise<unknown>)>;
   /**
    * The base directory used to resolve entry IDs. A path relative to the
    * project root directory, or an absolute file URL.
@@ -95,6 +95,8 @@ export default function astroContentLoader({
   generateId = generateIdDefault,
 }: GlobOptions): Loader {
   const fileToIdMap = new Map<string, string>();
+  // Check if the glob was configured with `eager: true`
+  const eager = typeof Object.values(modules)[0] !== "function";
 
   async function load({
     config,
@@ -120,15 +122,21 @@ export default function astroContentLoader({
     }
 
     const modulesAbsolute = Object.fromEntries(
-      paths.map((p) => {
-        const relativeToRoot = p.startsWith(".")
-          ? path.join("src", p)
-          : path.join(".", p);
-        const absoluteUrl = new URL(relativeToRoot, config.root);
-        return [fileURLToPath(absoluteUrl), modules[p]];
-      }),
+      await Promise.all(
+        paths.map(async (p) => {
+          const relativeToRoot = p.startsWith(".")
+            ? path.join("src", p)
+            : path.join(".", p);
+          const absoluteUrl = new URL(relativeToRoot, config.root);
+          return [
+            fileURLToPath(absoluteUrl),
+            eager
+              ? (modules[p] as AstroContentInstance)
+              : await (modules[p] as () => Promise<AstroContentInstance>)(),
+          ];
+        }),
+      ),
     );
-
     const pathsAbsolute = Object.keys(modulesAbsolute);
 
     const baseDir = base
@@ -145,14 +153,10 @@ export default function astroContentLoader({
       logger.error(message.join(" "));
     }
 
-    await Promise.all(
-      Object.keys(modulesAbsolute).map((filePath) => {
-        const entry = posixRelative(baseDirPath, filePath);
-        modulesAbsolute[filePath]().then((instance) =>
-          syncData(entry, instance as AstroContentInstance),
-        );
-      }),
-    );
+    Object.keys(modulesAbsolute).map((filePath) => {
+      const entry = posixRelative(baseDirPath, filePath);
+      syncData(entry, modulesAbsolute[filePath] as AstroContentInstance);
+    });
 
     if (!watcher) return;
     watcher.add(baseDirPath);
@@ -161,8 +165,10 @@ export default function astroContentLoader({
       if (Object.keys(modulesAbsolute).includes(changedPath)) {
         const entry = posixRelative(baseDirPath, changedPath);
         const oldId = fileToIdMap.get(changedPath);
-        await modulesAbsolute[changedPath]().then((instance) =>
-          syncData(entry, instance as AstroContentInstance, oldId),
+        syncData(
+          entry,
+          modulesAbsolute[changedPath] as AstroContentInstance,
+          oldId,
         );
         logger.info(`Reloaded data from ${green(entry)}`);
       }
