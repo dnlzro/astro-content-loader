@@ -91,6 +91,17 @@ const { Content } = await render(entry);
 
 See the [Astro content collection documentation](https://docs.astro.build/en/guides/content-collections/#building-for-static-output-default) for more details.
 
+## Caveats
+
+- The content collections schema [`image()` helper](https://docs.astro.build/en/guides/images/#images-in-content-collections) is not (yet) supported.
+- The `eager` option on `import.meta.glob` must be manually switched when building.
+
+> [!NOTE]
+> Unfortunately, the following code won't work, because all parameters passed to `import.meta.glob` must be static:
+> ```typescript
+>  import.meta.glob("./content/posts/**/*.astro", { eager: import.meta.env.PROD }
+>  ```
+
 ## Credit
 
 -  Architecture based on Astro's built-in [`glob` loader](https://docs.astro.build/en/reference/content-loader-reference/#glob-loader) ([source](https://github.com/withastro/astro/blob/acb9b302f56e38833a1ab01147f7fde0bf967889/packages/astro/src/content/loaders/glob.ts#L59)).
