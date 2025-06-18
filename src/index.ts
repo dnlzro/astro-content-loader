@@ -122,20 +122,18 @@ export default function astroContentLoader({
     }
 
     const modulesAbsolute = Object.fromEntries(
-      await Promise.all(
-        paths.map(async (p) => {
-          const relativeToRoot = p.startsWith(".")
-            ? path.join("src", p)
-            : path.join(".", p);
-          const absoluteUrl = new URL(relativeToRoot, config.root);
-          return [
-            fileURLToPath(absoluteUrl),
-            eager
-              ? (modules[p] as AstroContentInstance)
-              : await (modules[p] as () => Promise<AstroContentInstance>)(),
-          ];
-        }),
-      ),
+      paths.map((p) => {
+        const relativeToRoot = p.startsWith(".")
+          ? path.join("src", p)
+          : path.join(".", p);
+        const absoluteUrl = new URL(relativeToRoot, config.root);
+        return [
+          fileURLToPath(absoluteUrl),
+          eager
+            ? Promise.resolve(modules[p] as AstroContentInstance)
+            : (modules[p] as () => Promise<AstroContentInstance>)(),
+        ];
+      }),
     );
     const pathsAbsolute = Object.keys(modulesAbsolute);
 
@@ -155,7 +153,7 @@ export default function astroContentLoader({
 
     Object.keys(modulesAbsolute).map((filePath) => {
       const entry = posixRelative(baseDirPath, filePath);
-      syncData(entry, modulesAbsolute[filePath] as AstroContentInstance);
+      modulesAbsolute[filePath].then((instance) => syncData(entry, instance));
     });
 
     if (!watcher) return;
@@ -165,10 +163,8 @@ export default function astroContentLoader({
       if (Object.keys(modulesAbsolute).includes(changedPath)) {
         const entry = posixRelative(baseDirPath, changedPath);
         const oldId = fileToIdMap.get(changedPath);
-        syncData(
-          entry,
-          modulesAbsolute[changedPath] as AstroContentInstance,
-          oldId,
+        modulesAbsolute[changedPath].then((instance) =>
+          syncData(entry, instance, oldId),
         );
         logger.info(`Reloaded data from ${green(entry)}`);
       }
