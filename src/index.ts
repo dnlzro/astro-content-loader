@@ -47,7 +47,7 @@ interface GlobOptions {
   generateId?: (options: GenerateIdOptions) => string;
 }
 
-function generateIdDefault({ entry, meta }: GenerateIdOptions) {
+export function generateIdDefault({ entry, meta }: GenerateIdOptions) {
   if (meta && meta.slug) {
     return meta.slug as string;
   }
@@ -63,7 +63,7 @@ function generateIdDefault({ entry, meta }: GenerateIdOptions) {
   return slug;
 }
 
-function inferBase(paths: string[]): string {
+export function inferBase(paths: string[]): string {
   const splitPaths = paths.map((p) => p.split(path.sep));
 
   const baseParts: string[] = [];
